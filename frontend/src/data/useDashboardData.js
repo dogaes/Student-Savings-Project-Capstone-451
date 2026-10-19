@@ -1,4 +1,4 @@
-import { SAMPLE_ACCOUNTS, SAMPLE_GOALS, SAMPLE_LOANS, SAMPLE_MONTHS } from './sampleDashboard.js'
+import { SAMPLE_ACCOUNTS, SAMPLE_GOALS, SAMPLE_HISTORY, SAMPLE_LOANS, SAMPLE_MONTHS } from './sampleDashboard.js'
 
 // One place to swap sample data for the real API later, e.g.
 //   const data = await api(`/dashboard?month=${month}`)
@@ -20,5 +20,6 @@ export function useDashboardData(month) {
     accounts: SAMPLE_ACCOUNTS,
     loans: SAMPLE_LOANS,
     goals: SAMPLE_GOALS,
+    history: SAMPLE_HISTORY.filter((h) => h.month <= month).slice(-6),
   }
 }

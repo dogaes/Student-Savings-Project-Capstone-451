@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { useDashboardData } from '../data/useDashboardData.js'
 import { date, money, monthLabel } from '../utils/format.js'
+import SpendingDonut from '../components/SpendingDonut.jsx'
+import IncomeSpendingChart from '../components/IncomeSpendingChart.jsx'
 
 // Dashboard / spending summary (UC-SPEND-01). Uses fabricated sample data for now.
 export default function DashboardPage() {
@@ -28,6 +30,15 @@ export default function DashboardPage() {
       {d.empty ? <EmptyState /> : (
         <>
           <SummaryCards d={d} />
+
+          <div className="row g-4 mb-4">
+            <div className="col-lg-5">
+              <ChartCard title="Spending by category"><SpendingDonut categories={d.categories} /></ChartCard>
+            </div>
+            <div className="col-lg-7">
+              <ChartCard title="Income vs. spending (last 6 months)"><IncomeSpendingChart history={d.history} /></ChartCard>
+            </div>
+          </div>
 
           <div className="row g-4 mb-4">
             <div className="col-lg-8"><BudgetCard categories={d.categories} /></div>
@@ -105,8 +116,15 @@ function BudgetCard({ categories }) {
                   style={{ width: `${pct}%` }} />
               </div>
               <div className="small text-muted mt-1">
-                {change === 0 ? 'Same as last month'
-                  : `${change > 0 ? '▲' : '▼'} ${money(Math.abs(change))} vs. last month`}
+                {change === 0 ? 'Same as last month' : (
+                  // Red ▲ = spent more than last month, green ▼ = spent less
+                  <>
+                    <span className={`fw-semibold ${change > 0 ? 'trend-up' : 'trend-down'}`}>
+                      {change > 0 ? '▲' : '▼'} {money(Math.abs(change))}
+                    </span>
+                    {change > 0 ? ' more than last month' : ' less than last month'}
+                  </>
+                )}
               </div>
             </div>
           )
@@ -189,6 +207,17 @@ function GoalsCard({ goals }) {
             </div>
           )
         })}
+      </div>
+    </div>
+  )
+}
+
+function ChartCard({ title, children }) {
+  return (
+    <div className="card h-100 shadow-sm border-0">
+      <div className="card-body">
+        <h2 className="card-title-sm mb-3">{title}</h2>
+        {children}
       </div>
     </div>
   )
