@@ -56,3 +56,14 @@ export const SAMPLE_MONTHS = {
     { name: 'Spring break trip', saved: 150.0, target: 600.0, targetDate: '2027-03-01' },
     { name: 'Emergency fund', saved: 600.0, target: 1000.0, targetDate: '2027-05-31' },
   ]
+
+// Six months of FABRICATED totals for the "Income vs. spending" chart.
+// September and October match the category totals above.
+export const SAMPLE_HISTORY = [
+  { month: '2026-05', income: 1700.0, spending: 1640.2 },
+  { month: '2026-06', income: 1700.0, spending: 1395.8 },
+  { month: '2026-07', income: 1750.0, spending: 1510.35 },
+  { month: '2026-08', income: 1800.0, spending: 1902.9 },
+  { month: '2026-09', income: 1850.0, spending: 1470.15 },
+  { month: '2026-10', income: 1850.0, spending: 1288.67 },
+]
