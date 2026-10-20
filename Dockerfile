@@ -21,4 +21,5 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=backend /app/target/finance-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Keep Java within the free plan's 512 MB of memory
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-XX:+UseSerialGC", "-jar", "app.jar"]
