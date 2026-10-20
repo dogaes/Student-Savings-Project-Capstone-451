@@ -32,8 +32,11 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  // Used by the Profile page after a save, so the name in the top menu updates right away.
+  const updateUser = (changes) => setUser((u) => ({ ...u, ...changes }))
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

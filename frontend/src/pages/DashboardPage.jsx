@@ -5,6 +5,7 @@ import { useDashboardData } from '../data/useDashboardData.js'
 import { date, money, monthLabel } from '../utils/format.js'
 import SpendingDonut from '../components/SpendingDonut.jsx'
 import IncomeSpendingChart from '../components/IncomeSpendingChart.jsx'
+import AiSummaryCard from '../components/AiSummaryCard.jsx'
 
 // Dashboard / spending summary (UC-SPEND-01). Uses fabricated sample data for now.
 export default function DashboardPage() {
@@ -30,6 +31,8 @@ export default function DashboardPage() {
       {d.empty ? <EmptyState /> : (
         <>
           <SummaryCards d={d} />
+
+          <AiSummaryCard month={month} d={d} />
 
           <div className="row g-4 mb-4">
             <div className="col-lg-5">

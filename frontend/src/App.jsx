@@ -3,6 +3,8 @@ import LoginPage from './pages/LoginPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import DashboardPage from './pages/DashboardPage.jsx'
 import ComingSoonPage from './pages/ComingSoonPage.jsx'
+import ProfilePage from './pages/ProfilePage.jsx'
+import AssistantPage from './pages/AssistantPage.jsx'
 import ProtectedRoute from './auth/ProtectedRoute.jsx'
 import AppLayout from './components/AppLayout.jsx'
 
@@ -19,8 +21,8 @@ export default function App() {
         <Route path="/accounts" element={<ComingSoonPage title="Accounts" />} />
         <Route path="/loans" element={<ComingSoonPage title="Loans" />} />
         <Route path="/goals" element={<ComingSoonPage title="Goals" />} />
-        <Route path="/assistant" element={<ComingSoonPage title="AI Assistant" />} />
-        <Route path="/profile" element={<ComingSoonPage title="Profile and Settings" />} />
+        <Route path="/assistant" element={<AssistantPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
