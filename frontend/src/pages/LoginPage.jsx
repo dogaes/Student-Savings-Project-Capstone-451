@@ -35,6 +35,9 @@ export default function LoginPage() {
           <h1 className="h3 mb-1 brand">Student Savings</h1>
           <p className="text-muted mb-4">Sign in to your account</p>
 
+          {new URLSearchParams(location.search).has('deleted') && !errors.form && (
+            <div className="alert alert-success" role="status">Your account was deleted.</div>
+          )}
           {errors.form && <div className="alert alert-danger" role="alert">{errors.form}</div>}
 
           <form onSubmit={handleSubmit} noValidate>
