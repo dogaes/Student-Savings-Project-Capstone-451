@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Turns validation failures into {"errors": {"field": "message"}} so the UI can show them next to each field. */
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
@@ -19,5 +18,11 @@ public class ApiExceptionHandler {
         ex.getBindingResult().getFieldErrors()
                 .forEach(err -> errors.putIfAbsent(err.getField(), err.getDefaultMessage()));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("errors", errors));
+    }
+
+    @ExceptionHandler(FieldException.class)
+    public ResponseEntity<Map<String, Object>> handleField(FieldException ex) {
+        return ResponseEntity.status(ex.getStatus())
+                .body(Map.of("errors", Map.of(ex.getField(), ex.getMessage())));
     }
 }
