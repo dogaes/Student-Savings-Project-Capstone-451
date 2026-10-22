@@ -22,4 +22,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("select coalesce(sum(t.amount), 0) from Transaction t where t.accountId = :accountId and t.userId = :userId")
     BigDecimal sumForAccount(@Param("accountId") Long accountId, @Param("userId") Long userId);
+
+    @Query("select lower(t.category), sum(t.amount) from Transaction t "
+        + "where t.userId = :userId and t.txnDate between :start and :end and t.amount < 0 "
+        + "group by lower(t.category)")
+    List<Object[]> spendingByCategory(@Param("userId") Long userId,
+                                      @Param("start") LocalDate start,
+                                      @Param("end") LocalDate end);
 }
