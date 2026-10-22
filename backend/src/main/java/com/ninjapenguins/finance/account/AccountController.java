@@ -1,4 +1,5 @@
 package com.ninjapenguins.finance.account;
+import com.ninjapenguins.finance.account.AccountService.AccountView;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
@@ -47,8 +48,9 @@ public class AccountController {
     }
 
     public record AccountResponse(Long id, String name, String type, BigDecimal balance) {
-        static AccountResponse from(Account a) {
-            return new AccountResponse(a.getId(), a.getName(), a.getType(), a.getOpeningBalance());
+        static AccountResponse from(AccountView v) {
+            Account a = v.account();
+            return new AccountResponse(a.getId(), a.getName(), a.getType(), v.balance());
         }
     }
 
