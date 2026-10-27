@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
+import ThemeToggle from '../theme/ThemeToggle.jsx'
 
 export default function LoginPage() {
   const { user, login } = useAuth()
@@ -30,6 +31,7 @@ export default function LoginPage() {
 
   return (
     <main className="container d-flex justify-content-center align-items-center min-vh-100">
+      <div className="position-fixed top-0 end-0 p-3"><ThemeToggle /></div>
       <div className="card shadow-sm w-100 auth-card">
         <div className="card-body p-4">
           <h1 className="h3 mb-1 brand">Student Savings</h1>

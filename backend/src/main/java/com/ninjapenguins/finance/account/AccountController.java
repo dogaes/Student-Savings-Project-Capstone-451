@@ -47,10 +47,11 @@ public class AccountController {
             BigDecimal openingBalance) {
     }
 
-    public record AccountResponse(Long id, String name, String type, BigDecimal balance) {
+    /** openingBalance is included so the edit form can show the current value. */
+    public record AccountResponse(Long id, String name, String type, BigDecimal openingBalance, BigDecimal balance) {
         static AccountResponse from(AccountView v) {
             Account a = v.account();
-            return new AccountResponse(a.getId(), a.getName(), a.getType(), v.balance());
+            return new AccountResponse(a.getId(), a.getName(), a.getType(), a.getOpeningBalance(), v.balance());
         }
     }
 

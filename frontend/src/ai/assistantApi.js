@@ -65,8 +65,9 @@ export async function summarizeMonth(month, d) {
 
 // Automatic summary built from the same numbers the dashboard shows.
 export function ruleBasedSummary(month, d) {
-  const pct = Math.round((d.spent / d.budget) * 100)
-  const parts = [`In ${monthLabel(month)} you spent ${money(d.spent)} of your ${money(d.budget)} budget (${pct}%).`]
+  const parts = d.budget > 0
+    ? [`In ${monthLabel(month)} you spent ${money(d.spent)} of your ${money(d.budget)} budget (${Math.round((d.spent / d.budget) * 100)}%).`]
+    : [`In ${monthLabel(month)} you spent ${money(d.spent)}. You haven't set a budget for this month yet.`]
 
   const over = d.categories.filter((c) => c.spent > c.budget)
   if (over.length) {
@@ -83,7 +84,7 @@ export function ruleBasedSummary(month, d) {
   }
 
   const biggest = [...d.categories].sort((a, b) => b.spent - a.spent)[0]
-  if (biggest) {
+  if (biggest && d.spent > 0) {
     parts.push(`Your biggest expense was ${biggest.name} at ${Math.round((biggest.spent / d.spent) * 100)}% of spending.`)
   }
 

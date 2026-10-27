@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { CHROME, SERIES, STATUS } from '../utils/chartColors.js'
+import { chartTheme } from '../utils/chartColors.js'
+import { useTheme } from '../theme/ThemeContext.jsx'
 import { money, monthLabel } from '../utils/format.js'
 
 const shortMonth = (m) => monthLabel(m).split(' ')[0].slice(0, 3)
@@ -9,6 +10,8 @@ const compact = (n) => (n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n}`)
 // Income vs. spending for the last 6 months. Also shows how spending changes over time.
 export default function IncomeSpendingChart({ history }) {
   const [showTable, setShowTable] = useState(false)
+  const { theme } = useTheme()
+  const { chrome: CHROME, series: SERIES, status: STATUS } = chartTheme(theme)
 
   return (
     <>
@@ -45,7 +48,7 @@ export default function IncomeSpendingChart({ history }) {
                 axisLine={{ stroke: CHROME.grid }} tick={{ fill: CHROME.axis, fontSize: 12 }} />
               <YAxis tickFormatter={compact} tickLine={false} axisLine={false} width={48}
                 tick={{ fill: CHROME.axis, fontSize: 12 }} />
-              <Tooltip content={<MonthTooltip />} cursor={{ fill: 'rgba(11,11,11,0.04)' }} />
+              <Tooltip content={<MonthTooltip series={SERIES} status={STATUS} />} cursor={{ fill: CHROME.cursor }} />
               <Legend verticalAlign="top" align="right" height={28} iconType="circle" iconSize={8}
                 formatter={(v) => <span style={{ color: CHROME.text, fontSize: 13 }}>{v}</span>} />
               <Bar dataKey="income" name="Income" fill={SERIES.income} radius={[4, 4, 0, 0]} maxBarSize={22} isAnimationActive={false} />
@@ -61,7 +64,7 @@ export default function IncomeSpendingChart({ history }) {
   )
 }
 
-function MonthTooltip({ active, payload, label }) {
+function MonthTooltip({ active, payload, label, series: SERIES, status: STATUS }) {
   if (!active || !payload?.length) return null
   const row = payload[0].payload
   const saved = row.income - row.spending

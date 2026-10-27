@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import { askAssistant } from '../ai/assistantApi.js'
 import { SUGGESTED_QUESTIONS } from '../ai/fallbackAnswers.js'
+import { useAuth } from '../auth/AuthContext.jsx'
+import Icon from '../components/ui/Icon.jsx'
+import PageHeader from '../components/ui/PageHeader.jsx'
 
 const MAX_LENGTH = 500
+const SUGGESTION_ICONS = ['grad', 'cart', 'pie', 'percent', 'bulb', 'coins']
 
 // AI financial assistant (UC-AI-02). The conversation lives only in this page's
 // memory, so it disappears on refresh or sign-out (FR-AI-007).
 export default function AssistantPage() {
+  const { user } = useAuth()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [thinking, setThinking] = useState(false)
@@ -50,40 +55,40 @@ export default function AssistantPage() {
   return (
     <div className="row justify-content-center">
       <div className="col-lg-9">
-        <div className="d-flex justify-content-between align-items-end mb-3">
-          <div>
-            <h1 className="h3 mb-1">AI Assistant</h1>
-            <p className="text-muted mb-0">Ask questions about budgeting, saving, and student loans.</p>
-          </div>
-          {messages.length > 0 && (
+        <PageHeader tone="ai" icon="sparkles" title="AI Assistant"
+          subtitle={`Hi ${user.firstName}! Ask me anything about budgeting, saving, or student loans.`}
+          actions={messages.length > 0 && (
             <button className="btn btn-outline-secondary btn-sm" onClick={() => { setMessages([]); setError('') }}>
-              Clear chat
+              New chat
             </button>
-          )}
-        </div>
+          )} />
 
-        <div className="alert alert-light border small mb-3" role="note">
-          Answers are general education only, not financial advice. Never share real account numbers,
-          passwords, or other personal information here.
-        </div>
-
-        <div className="card shadow-sm border-0">
-          <div className="card-body chat-body" aria-live="polite">
+        <div className="fun-card chat-shell">
+          <div className="chat-body" aria-live="polite">
             {messages.length === 0 && !thinking && (
-              <div className="text-center text-muted py-4">
-                <p className="mb-3">Try one of these to get started:</p>
-                <div className="d-flex flex-wrap justify-content-center gap-2">
-                  {SUGGESTED_QUESTIONS.map((q) => (
-                    <button key={q} className="btn btn-outline-primary btn-sm rounded-pill" onClick={() => send(q)}>
-                      {q}
-                    </button>
+              <div className="py-2">
+                <div className="d-flex align-items-center gap-2 mb-3">
+                  <span className="avatar"><Icon name="bot" size={18} /></span>
+                  <div className="chat-bubble chat-assistant">
+                    Hey! I'm your money coach. Pick a question to start, or type your own below.
+                  </div>
+                </div>
+                <div className="row g-2">
+                  {SUGGESTED_QUESTIONS.map((q, i) => (
+                    <div className="col-sm-6" key={q}>
+                      <button className="suggest h-100" onClick={() => send(q)}>
+                        <span className="cat-icon"><Icon name={SUGGESTION_ICONS[i % SUGGESTION_ICONS.length]} size={18} /></span>
+                        <span className="small fw-semibold">{q}</span>
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
             {messages.map((m, i) => (
-              <div key={i} className={`d-flex mb-3 ${m.role === 'user' ? 'justify-content-end' : ''}`}>
+              <div key={i} className={`chat-row ${m.role === 'user' ? 'me' : ''}`}>
+                {m.role === 'assistant' && <span className="avatar"><Icon name="bot" size={18} /></span>}
                 <div className={`chat-bubble ${m.role === 'user' ? 'chat-user' : 'chat-assistant'}`}>
                   <div className="visually-hidden">{m.role === 'user' ? 'You said:' : 'Assistant said:'}</div>
                   {m.text}
@@ -98,29 +103,37 @@ export default function AssistantPage() {
             ))}
 
             {thinking && (
-              <div className="d-flex mb-3">
-                <div className="chat-bubble chat-assistant text-muted">
-                  <span className="spinner-grow spinner-grow-sm me-2" aria-hidden="true" />Thinking…
+              <div className="chat-row">
+                <span className="avatar"><Icon name="bot" size={18} /></span>
+                <div className="chat-bubble chat-assistant">
+                  <span className="typing" aria-label="Thinking"><span /><span /><span /></span>
                 </div>
               </div>
             )}
             <div ref={endRef} />
           </div>
 
-          <div className="card-footer bg-white border-top p-3">
+          <div className="border-top p-3">
             {error && <div className="alert alert-danger py-2 small" role="alert">{error}</div>}
             <form onSubmit={(e) => { e.preventDefault(); send(input) }}>
               <label htmlFor="question" className="visually-hidden">Your question</label>
-              <div className="d-flex gap-2 align-items-end">
-                <textarea id="question" className="form-control" rows={2} maxLength={MAX_LENGTH}
-                  placeholder="Ask a question… (Enter to send, Shift + Enter for a new line)"
+              <div className="composer">
+                <textarea id="question" className="form-control" rows={1} maxLength={MAX_LENGTH}
+                  placeholder="Ask a question…"
                   value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown} />
-                <button type="submit" className="btn btn-primary" disabled={!input.trim() || thinking}>
-                  Send
+                <button type="submit" className="send-btn" disabled={!input.trim() || thinking} aria-label="Send">
+                  <Icon name="send" size={18} />
                 </button>
               </div>
-              <div className="form-text text-end">{input.length}/{MAX_LENGTH}</div>
+              <div className="d-flex justify-content-between form-text px-1">
+                <span>Enter to send · Shift + Enter for a new line</span>
+                <span>{input.length}/{MAX_LENGTH}</span>
+              </div>
             </form>
+            <p className="small text-muted mb-0 mt-2">
+              <Icon name="alert" size={14} className="me-1" />
+              General education only, not financial advice. Never share real account numbers, passwords, or personal info.
+            </p>
           </div>
         </div>
       </div>
