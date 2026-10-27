@@ -2,16 +2,17 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
 import { useDashboardData } from '../data/useDashboardData.js'
-import { date, money, monthLabel } from '../utils/format.js'
+import { currentMonth, date, money, monthLabel } from '../utils/format.js'
 import SpendingDonut from '../components/SpendingDonut.jsx'
 import IncomeSpendingChart from '../components/IncomeSpendingChart.jsx'
 import AiSummaryCard from '../components/AiSummaryCard.jsx'
 
-// Dashboard / spending summary (UC-SPEND-01). Uses fabricated sample data for now.
+// Dashboard / spending summary (UC-SPEND-01). Data comes from GET /api/dashboard.
 export default function DashboardPage() {
   const { user } = useAuth()
-  const [month, setMonth] = useState('2026-10')
-  const d = useDashboardData(month)
+  const [month, setMonth] = useState(currentMonth())
+  const { data: d, loading, error, reload } = useDashboardData(month)
+  const months = d?.months ?? [month]
 
   return (
     <>
@@ -23,12 +24,19 @@ export default function DashboardPage() {
         <div>
           <label htmlFor="month" className="form-label small text-muted mb-1">Month</label>
           <select id="month" className="form-select" value={month} onChange={(e) => setMonth(e.target.value)}>
-            {d.months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
+            {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
           </select>
         </div>
       </div>
 
-      {d.empty ? <EmptyState /> : (
+      {error ? (
+        <div className="alert alert-danger d-flex justify-content-between align-items-center">
+          Couldn't load your dashboard.
+          <button className="btn btn-outline-danger btn-sm" onClick={reload}>Try again</button>
+        </div>
+      ) : !d ? (
+        <div className="text-center text-muted py-5"><span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />Loading…</div>
+      ) : d.empty ? <EmptyState /> : (
         <>
           <SummaryCards d={d} />
 
@@ -54,6 +62,7 @@ export default function DashboardPage() {
           </div>
 
           <TransactionsCard transactions={d.transactions} />
+          {loading && <div className="visually-hidden" aria-live="polite">Updating…</div>}
         </>
       )}
     </>
@@ -61,10 +70,13 @@ export default function DashboardPage() {
 }
 
 function SummaryCards({ d }) {
-  const usedPct = Math.round((d.spent / d.budget) * 100)
+  const usedPct = d.budget > 0 ? Math.round((d.spent / d.budget) * 100) : null
   const cards = [
     { label: 'Income', value: money(d.income) },
-    { label: 'Spending', value: money(d.spent), note: `${usedPct}% of your ${money(d.budget)} budget` },
+    {
+      label: 'Spending', value: money(d.spent),
+      note: usedPct === null ? 'No budget set for this month' : `${usedPct}% of your ${money(d.budget)} budget`,
+    },
     {
       label: 'Budget remaining',
       value: money(d.remaining),
@@ -100,8 +112,9 @@ function BudgetCard({ categories }) {
           <h2 className="card-title-sm">Budget vs. spending</h2>
           <Link to="/budget" className="small">Edit budget</Link>
         </div>
+        {categories.length === 0 && <p className="text-muted small mb-0">No budget categories yet. <Link to="/budget">Create a budget</Link>.</p>}
         {categories.map((c) => {
-          const pct = Math.min(100, Math.round((c.spent / c.budget) * 100))
+          const pct = c.budget > 0 ? Math.min(100, Math.round((c.spent / c.budget) * 100)) : (c.spent > 0 ? 100 : 0)
           const over = c.spent > c.budget
           const change = c.spent - c.lastMonth
           return (
@@ -146,9 +159,10 @@ function AccountsCard({ accounts }) {
           <h2 className="card-title-sm">Accounts</h2>
           <Link to="/accounts" className="small">View all</Link>
         </div>
+        {accounts.length === 0 && <p className="text-muted small">No accounts yet.</p>}
         <ul className="list-unstyled mb-0">
           {accounts.map((a) => (
-            <li key={a.name} className="d-flex justify-content-between py-2 border-bottom">
+            <li key={a.id ?? a.name} className="d-flex justify-content-between py-2 border-bottom">
               <div>
                 <div className="fw-medium">{a.name}</div>
                 <div className="small text-muted">{a.type}</div>
@@ -177,10 +191,12 @@ function LoansCard({ loans }) {
         </div>
         <div className="stat-label">Total balance</div>
         <div className="stat-value mb-3">{money(loans.totalBalance)}</div>
-        <div className="alert alert-light border mb-0 small">
-          Next payment: <strong>{money(loans.next.amount)}</strong> to {loans.next.name},
-          due <strong>{date(loans.next.dueDate)}</strong>
-        </div>
+        {loans.next ? (
+          <div className="alert alert-light border mb-0 small">
+            Next payment: <strong>{money(loans.next.amount)}</strong> to {loans.next.name},
+            due <strong>{date(loans.next.dueDate)}</strong>
+          </div>
+        ) : <p className="text-muted small mb-0">No upcoming loan payments.</p>}
       </div>
     </div>
   )
@@ -194,10 +210,11 @@ function GoalsCard({ goals }) {
           <h2 className="card-title-sm">Savings goals</h2>
           <Link to="/goals" className="small">View goals</Link>
         </div>
+        {goals.length === 0 && <p className="text-muted small mb-0">No savings goals yet.</p>}
         {goals.map((g) => {
-          const pct = Math.round((g.saved / g.target) * 100)
+          const pct = g.target > 0 ? Math.min(100, Math.round((g.saved / g.target) * 100)) : 0
           return (
-            <div className="mb-3" key={g.name}>
+            <div className="mb-3" key={g.id ?? g.name}>
               <div className="d-flex justify-content-between small mb-1">
                 <span className="fw-medium">{g.name}</span>
                 <span className="text-muted">{pct}% · {money(g.saved)} of {money(g.target)}</span>
@@ -240,8 +257,11 @@ function TransactionsCard({ transactions }) {
               <tr><th>Date</th><th>Description</th><th>Category</th><th>Account</th><th className="text-end">Amount</th></tr>
             </thead>
             <tbody>
+              {transactions.length === 0 && (
+                <tr><td colSpan="5" className="text-muted small">No transactions this month.</td></tr>
+              )}
               {transactions.map((t, i) => (
-                <tr key={i}>
+                <tr key={t.id ?? i}>
                   <td>{date(t.date)}</td>
                   <td>{t.description}</td>
                   <td>{t.category}</td>

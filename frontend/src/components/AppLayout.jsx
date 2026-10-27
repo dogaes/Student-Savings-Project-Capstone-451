@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
+import ThemeToggle from '../theme/ThemeToggle.jsx'
 
 const LINKS = [
   { to: '/dashboard', label: 'Dashboard' },
@@ -24,7 +25,7 @@ export default function AppLayout() {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+      <nav className="navbar navbar-expand-lg bg-body border-bottom sticky-top">
         <div className="container">
           <NavLink to="/dashboard" className="navbar-brand brand fw-semibold">Student Savings</NavLink>
           <button className="navbar-toggler" type="button" aria-label="Toggle navigation"
@@ -43,6 +44,7 @@ export default function AppLayout() {
               <NavLink to="/profile" className="nav-link text-secondary" onClick={() => setOpen(false)}>
                 {user.firstName} {user.lastName}
               </NavLink>
+              <ThemeToggle />
               <button className="btn btn-outline-secondary btn-sm" onClick={handleLogout}>Sign out</button>
             </div>
           </div>
