@@ -1,9 +1,11 @@
+
 import { useEffect, useRef, useState } from 'react'
 import { askAssistant } from '../ai/assistantApi.js'
 import { SUGGESTED_QUESTIONS } from '../ai/fallbackAnswers.js'
 import { useAuth } from '../auth/AuthContext.jsx'
 import Icon from '../components/ui/Icon.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
+import ReactMarkdown from 'react-markdown'
 
 const MAX_LENGTH = 500
 const SUGGESTION_ICONS = ['grad', 'cart', 'pie', 'percent', 'bulb', 'coins']
@@ -91,7 +93,15 @@ export default function AssistantPage() {
                 {m.role === 'assistant' && <span className="avatar"><Icon name="bot" size={18} /></span>}
                 <div className={`chat-bubble ${m.role === 'user' ? 'chat-user' : 'chat-assistant'}`}>
                   <div className="visually-hidden">{m.role === 'user' ? 'You said:' : 'Assistant said:'}</div>
-                  {m.text}
+
+                  {m.role === 'assistant' ? (
+                    <div className="chat-markdown">
+                      <ReactMarkdown>{m.text}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    m.text
+                  )}
+
                   {m.role === 'assistant' && (
                     <div className="chat-meta">
                       {m.source === 'fallback' ? 'Built-in answer · AI service not connected' : 'AI answer'}

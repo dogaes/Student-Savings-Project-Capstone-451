@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { summarizeMonth } from '../ai/assistantApi.js'
 import { monthLabel } from '../utils/format.js'
+import ReactMarkdown from 'react-markdown'
 
 // "Summarize my month" card on the dashboard (UC-AI-01).
 export default function AiSummaryCard({ month, d }) {
@@ -49,7 +50,9 @@ export default function AiSummaryCard({ month, d }) {
 
         {summary && (
           <div className="mt-3" aria-live="polite">
-            <p className="mb-1">{summary.text}</p>
+            <div className="ai-summary-content">
+              <ReactMarkdown>{summary.text}</ReactMarkdown>
+            </div>
             <div className="chat-meta">
               {summary.source === 'fallback' ? 'Automatic summary · AI service not connected' : 'AI summary'}
               {' · Not financial advice'}
