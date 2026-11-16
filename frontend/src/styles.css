@@ -238,4 +238,15 @@
      .ring-bar, .fat-bar > span { transition: none; }
      .typing span { animation: none; opacity: .6; }
    }
-   
+
+/* Compact formatting for AI chat responses */
+.chat-markdown {line-height: 1.45;}
+.chat-markdown p {margin-top: 0; margin-bottom: 0.5rem;}
+.chat-markdown ul,
+.chat-markdown ol {margin-top: 0.25rem; margin-bottom: 0.5rem; padding-left: 1.25rem;}
+.chat-markdown li {margin-bottom: 0.15rem;}
+.chat-markdown li > p {margin-bottom: 0.15rem;}
+.chat-markdown > :last-child {margin-bottom: 0;}
+
+/* Let Markdown handle its own paragraph and list spacing */
+.chat-markdown {white-space: normal;}

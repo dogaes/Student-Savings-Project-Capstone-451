@@ -23,6 +23,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/finance
       SPRING_DATASOURCE_USERNAME: test_user
       SPRING_DATASOURCE_PASSWORD: test
+      AI_API_KEY: ${AI_API_KEY}
+      AI_MODEL: gemini-3.5-flash-lite
     ports:
       - "8080:8080"
     depends_on:
