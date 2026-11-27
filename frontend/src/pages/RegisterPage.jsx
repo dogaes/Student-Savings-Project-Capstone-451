@@ -34,8 +34,8 @@ export default function RegisterPage() {
     setSubmitting(true)
     try {
       const { confirmPassword, ...body } = form
-      await register(body)
-      navigate('/dashboard', { replace: true })
+      const created = await register(body)
+      navigate('/login', { replace: true, state: { registered: created?.username ?? body.username } })
     } catch (err) {
       setErrors(err.errors)
     } finally {
@@ -48,7 +48,8 @@ export default function RegisterPage() {
       <div className="position-fixed top-0 end-0 p-3"><ThemeToggle /></div>
       <div className="card shadow-sm w-100 auth-card">
         <div className="card-body p-4">
-          <h1 className="h3 mb-1 brand">Create an account</h1>
+          <img src="/logo.png" alt="" width="88" height="88" className="auth-logo" />
+          <h1 className="h3 mb-1 brand text-center">Create an account</h1>
           <p className="text-muted mb-4">Use made-up financial data only. Never enter real account or card numbers.</p>
 
           {errors.form && <div className="alert alert-danger" role="alert">{errors.form}</div>}

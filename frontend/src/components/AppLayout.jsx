@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.jsx'
 import ThemeToggle from '../theme/ThemeToggle.jsx'
+import ProfileMenu from './ProfileMenu.jsx'
 
 const LINKS = [
   { to: '/dashboard', label: 'Dashboard' },
@@ -27,7 +28,10 @@ export default function AppLayout() {
     <>
       <nav className="navbar navbar-expand-lg bg-body border-bottom sticky-top">
         <div className="container">
-          <NavLink to="/dashboard" className="navbar-brand brand fw-semibold">Student Savings</NavLink>
+          <NavLink to="/dashboard" className="navbar-brand brand fw-semibold d-flex align-items-center gap-2">
+            <img src="/logo.png" alt="" width="40" height="40" className="brand-logo" />
+            Student Savings
+          </NavLink>
           <button className="navbar-toggler" type="button" aria-label="Toggle navigation"
             aria-expanded={open} onClick={() => setOpen(!open)}>
             <span className="navbar-toggler-icon" />
@@ -41,11 +45,8 @@ export default function AppLayout() {
               ))}
             </ul>
             <div className="d-flex align-items-center gap-3 pb-2 pb-lg-0">
-              <NavLink to="/profile" className="nav-link text-secondary" onClick={() => setOpen(false)}>
-                {user.firstName} {user.lastName}
-              </NavLink>
               <ThemeToggle />
-              <button className="btn btn-outline-secondary btn-sm" onClick={handleLogout}>Sign out</button>
+              <ProfileMenu user={user} onNavigate={() => setOpen(false)} onSignOut={handleLogout} />
             </div>
           </div>
         </div>

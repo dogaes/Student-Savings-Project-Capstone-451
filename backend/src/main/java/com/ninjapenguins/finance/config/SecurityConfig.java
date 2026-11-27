@@ -33,7 +33,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/logout",
+                        "/api/auth/verify-code", "/api/auth/resend-code").permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll())
             // Return 401 instead of redirecting to Spring's default login page.
