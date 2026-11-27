@@ -15,6 +15,8 @@ function daysUntil(iso) {
   const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   return Math.round((new Date(y, m - 1, d) - start) / 86400000)
 }
+/** Payments due this soon (or late) get a red tag. */
+const URGENT_DAYS = 10
 const dueText = (n) => (n < 0 ? `${-n} day${n === -1 ? '' : 's'} late` : n === 0 ? 'Due today' : `Due in ${n} day${n === 1 ? '' : 's'}`)
 
 // Loans (UC-LOAN-01). Payoff estimates use monthly interest = balance × APR ÷ 12.
@@ -48,7 +50,10 @@ export default function LoansPage() {
         <HeroStat label="Still owed" value={money(balanceTotal)} note={`${list.length} loan${list.length === 1 ? '' : 's'}`} />
         <HeroStat label="Monthly payments" value={money(monthlyTotal)} note="All loans together" />
         <HeroStat label="Next payment" value={next ? money(next.amount) : '—'}
-          note={next ? `${next.name} · ${dueText(daysUntil(next.dueDate))}` : 'Nothing due'} />
+          note={next ? (
+            <>{next.name} · <span className={daysUntil(next.dueDate) <= URGENT_DAYS ? 'fw-semibold text-danger' : ''}>
+              {dueText(daysUntil(next.dueDate))}</span></>
+          ) : 'Nothing due'} />
       </PageHeader>
 
       {editing && (
@@ -101,7 +106,7 @@ function LoanCard({ loan: l, onEdit, onDelete }) {
             {l.lender && <div className="small text-muted text-truncate">{l.lender}</div>}
           </div>
           {balance === 0 ? <span className="pill pill-good"><Icon name="trophy" size={13} />Paid off</span>
-            : <span className={`pill ${due < 0 ? 'pill-bad' : due <= 7 ? 'pill-warn' : 'pill-tone'}`}><Icon name="calendar" size={13} />{dueText(due)}</span>}
+            : <span className={`pill ${due <= URGENT_DAYS ? 'pill-urgent' : 'pill-tone'}`}><Icon name={due <= URGENT_DAYS ? 'alert' : 'calendar'} size={13} />{dueText(due)}</span>}
         </div>
 
         <div className="d-flex align-items-center gap-3 mb-3">

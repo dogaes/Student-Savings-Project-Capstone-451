@@ -9,6 +9,7 @@ import { useApiData } from '../utils/useApiData.js'
 import { date, money, today } from '../utils/format.js'
 
 const QUICK_ADD = [10, 25, 50]
+const MILESTONES = [25, 50, 75, 100]
 
 // Savings goals (UC-GOAL-01) with a simple savings plan (UC-GOAL-02).
 export default function GoalsPage() {
@@ -112,12 +113,21 @@ function GoalCard({ goal, onEdit, onAdd, onDelete }) {
           </ProgressRing>
         </div>
 
+        {/* Milestones: each shows its percentage and the dollar amount it stands for */}
         <div className="milestones" aria-hidden="true">
-          {[25, 50, 75, 100].map((m) => (
+          {MILESTONES.map((m) => (
             <span key={m} className={`milestone ${pct >= m ? 'hit' : ''}`}>{pct >= m && <Icon name="check" size={11} strokeWidth={3.5} />}</span>
           ))}
         </div>
-        <div className="milestone-labels mb-3"><span>25%</span><span>50%</span><span>75%</span><span>{money(target)}</span></div>
+        <ul className="milestone-labels mb-3" aria-label="Milestones">
+          {MILESTONES.map((m) => (
+            <li key={m} className={pct >= m ? 'hit' : ''}>
+              <span className="ms-pct">{m}%</span>
+              <span className="ms-amt">{money((target * m) / 100)}</span>
+              <span className="visually-hidden">{pct >= m ? ' reached' : ' not reached yet'}</span>
+            </li>
+          ))}
+        </ul>
 
         {achieved ? (
           <p className="small text-center mb-3">You hit your target. Time to celebrate (on budget)!</p>

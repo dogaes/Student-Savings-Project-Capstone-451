@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { api } from '../auth/api.js'
 import FormField from '../components/ui/FormField.jsx'
 import DeleteButton from '../components/ui/DeleteButton.jsx'
-import MonthSelect from '../components/ui/MonthSelect.jsx'
+import MonthSelect, { notifyDataChanged } from '../components/ui/MonthSelect.jsx'
 import Icon from '../components/ui/Icon.jsx'
 import PageHeader, { HeroStat } from '../components/ui/PageHeader.jsx'
+import AccountHistory from '../components/AccountHistory.jsx'
 import { useApiData } from '../utils/useApiData.js'
 import { useTheme } from '../theme/ThemeContext.jsx'
 import { categoryColor, categoryIcon } from '../utils/categoryStyle.js'
@@ -21,7 +22,10 @@ export default function AccountsPage() {
   const transactions = useApiData(`/transactions?month=${month}`)
 
   // Adding or changing a transaction changes account balances too
-  const reloadAll = () => Promise.all([accounts.reload(), transactions.reload()])
+  const reloadAll = async () => {
+    await Promise.all([accounts.reload(), transactions.reload()])
+    notifyDataChanged()
+  }
   const [adding, setAdding] = useState(false)
 
   const list = (accounts.data ?? []).map((a) => ({ ...a, balance: Number(a.balance) }))
@@ -53,6 +57,7 @@ export default function AccountsPage() {
 
 function AccountsSection({ state, list, onChange, adding, setAdding }) {
   const [editingAccount, setEditingAccount] = useState(null)
+  const [viewing, setViewing] = useState(null) // account whose history drawer is open
   // The form is open for a new account (from the header button) or for one being edited
   const editing = adding ? {} : editingAccount
   const setEditing = (a) => {
@@ -75,7 +80,8 @@ function AccountsSection({ state, list, onChange, adding, setAdding }) {
       <div className="row g-3">
         {list.map((a) => (
           <div className="col-md-6 col-xl-4" key={a.id}>
-            <div className={`bank-card ${typeClass(a.type)}`}>
+            <button type="button" className={`bank-card ${typeClass(a.type)}`} onClick={() => setViewing(a)}
+              aria-label={`${a.name}: show all transactions`}>
               <div className="d-flex justify-content-between align-items-start">
                 <div>
                   <div className="bc-type d-flex align-items-center gap-1"><Icon name={typeIcon(a.type)} size={15} />{a.type}</div>
@@ -87,7 +93,8 @@ function AccountsSection({ state, list, onChange, adding, setAdding }) {
                 <div className="bc-type">{a.balance < 0 ? 'Amount owed' : 'Balance'}</div>
                 <div className="bc-balance">{money(Math.abs(a.balance))}</div>
               </div>
-            </div>
+              <span className="bc-hint">View history ›</span>
+            </button>
             <div className="d-flex justify-content-end align-items-center gap-1 mt-1 px-1">
               <button className="icon-btn" onClick={() => setEditing(a)} aria-label={`Edit ${a.name}`} title="Edit"><Icon name="pencil" size={17} /></button>
               <DeleteButton compact what={a.name}
@@ -105,7 +112,8 @@ function AccountsSection({ state, list, onChange, adding, setAdding }) {
           </div>
         )}
       </div>
-      {list.length > 0 && <p className="small text-muted mt-2 mb-0">Deleting an account also deletes its transactions.</p>}
+      {list.length > 0 && <p className="small text-muted mt-2 mb-0">Click a card to see all of its transactions. Deleting an account also deletes its transactions.</p>}
+      {viewing && <AccountHistory account={viewing} onClose={() => setViewing(null)} />}
     </section>
   )
 }

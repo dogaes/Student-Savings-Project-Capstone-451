@@ -6,13 +6,13 @@ import { currentMonth, date, money, monthLabel } from '../utils/format.js'
 import SpendingDonut from '../components/SpendingDonut.jsx'
 import IncomeSpendingChart from '../components/IncomeSpendingChart.jsx'
 import AiSummaryCard from '../components/AiSummaryCard.jsx'
+import MonthSelect from '../components/ui/MonthSelect.jsx'
 
 // Dashboard / spending summary (UC-SPEND-01). Data comes from GET /api/dashboard.
 export default function DashboardPage() {
   const { user } = useAuth()
   const [month, setMonth] = useState(currentMonth())
   const { data: d, loading, error, reload } = useDashboardData(month)
-  const months = d?.months ?? [month]
 
   return (
     <>
@@ -21,12 +21,7 @@ export default function DashboardPage() {
           <h1 className="h3 mb-1">Welcome back, {user.firstName}</h1>
           <p className="text-muted mb-0">Here's your money at a glance.</p>
         </div>
-        <div>
-          <label htmlFor="month" className="form-label small text-muted mb-1">Month</label>
-          <select id="month" className="form-select" value={month} onChange={(e) => setMonth(e.target.value)}>
-            {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
-          </select>
-        </div>
+        <MonthSelect value={month} onChange={setMonth} />
       </div>
 
       {error ? (
@@ -181,6 +176,14 @@ function AccountsCard({ accounts }) {
   )
 }
 
+/** True when a date is 10 days away or less (or already past), so it gets a red label. */
+function dueSoon(iso) {
+  const [y, m, d] = iso.split('-').map(Number)
+  const now = new Date()
+  const days = Math.round((new Date(y, m - 1, d) - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000)
+  return days <= 10
+}
+
 function LoansCard({ loans }) {
   return (
     <div className="card h-100 shadow-sm border-0">
@@ -194,7 +197,8 @@ function LoansCard({ loans }) {
         {loans.next ? (
           <div className="alert alert-light border mb-0 small">
             Next payment: <strong>{money(loans.next.amount)}</strong> to {loans.next.name},
-            due <strong>{date(loans.next.dueDate)}</strong>
+            due <strong className={dueSoon(loans.next.dueDate) ? 'text-danger' : ''}>{date(loans.next.dueDate)}</strong>
+            {dueSoon(loans.next.dueDate) && <span className="pill pill-urgent ms-2">Due soon</span>}
           </div>
         ) : <p className="text-muted small mb-0">No upcoming loan payments.</p>}
       </div>

@@ -8,6 +8,7 @@ import LoansPage from './pages/LoansPage.jsx'
 import GoalsPage from './pages/GoalsPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import AssistantPage from './pages/AssistantPage.jsx'
+import HelpPage from './pages/HelpPage.jsx'
 import ProtectedRoute from './auth/ProtectedRoute.jsx'
 import AppLayout from './components/AppLayout.jsx'
 
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/goals" element={<GoalsPage />} />
         <Route path="/assistant" element={<AssistantPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/help" element={<HelpPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

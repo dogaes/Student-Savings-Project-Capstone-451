@@ -15,15 +15,30 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false))
   }, [])
 
-  const login = async (usernameOrEmail, password) => {
-    const u = await api('/auth/login', { method: 'POST', body: { usernameOrEmail, password } })
+  // Sign in, step 1: username/email + password. The server answers { twoFactorRequired, sentTo }
+  // and texts a code (simulated). Nobody is signed in until verifyCode succeeds.
+  const login = async (usernameOrEmail, password) =>
+    api('/auth/login', { method: 'POST', body: { usernameOrEmail, password } })
+
+  // Sign in, step 2: the 6-digit code from the text message
+  const verifyCode = async (code) => {
+    const u = await api('/auth/verify-code', { method: 'POST', body: { code } })
     setUser(u)
     return u
   }
 
+  const resendCode = () => api('/auth/resend-code', { method: 'POST' })
+
+  // Creates the account, then signs out right away so the person signs in themselves
+  // on the login page (the server starts a session when it registers someone).
   const register = async (form) => {
     const u = await api('/auth/register', { method: 'POST', body: form })
-    setUser(u)
+    try {
+      await api('/auth/logout', { method: 'POST' })
+    } catch {
+      // Not signed in anyway; nothing to do
+    }
+    setUser(null)
     return u
   }
 
@@ -36,7 +51,7 @@ export function AuthProvider({ children }) {
   const updateUser = (changes) => setUser((u) => ({ ...u, ...changes }))
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, verifyCode, resendCode, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

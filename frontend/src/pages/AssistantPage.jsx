@@ -75,12 +75,13 @@ export default function AssistantPage() {
                     Hey! I'm your money coach. Pick a question to start, or type your own below.
                   </div>
                 </div>
+                <div className="example-label">Example questions</div>
                 <div className="row g-2">
                   {SUGGESTED_QUESTIONS.map((q, i) => (
                     <div className="col-sm-6" key={q}>
-                      <button className="suggest h-100" onClick={() => send(q)}>
+                      <button className="suggest example h-100" onClick={() => send(q)}>
                         <span className="cat-icon"><Icon name={SUGGESTION_ICONS[i % SUGGESTION_ICONS.length]} size={18} /></span>
-                        <span className="small fw-semibold">{q}</span>
+                        <span className="small">{q}</span>
                       </button>
                     </div>
                   ))}

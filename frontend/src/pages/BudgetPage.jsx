@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { api } from '../auth/api.js'
 import FormField from '../components/ui/FormField.jsx'
 import DeleteButton from '../components/ui/DeleteButton.jsx'
-import MonthSelect from '../components/ui/MonthSelect.jsx'
+import MonthSelect, { notifyDataChanged } from '../components/ui/MonthSelect.jsx'
 import Icon from '../components/ui/Icon.jsx'
 import ProgressRing from '../components/ui/ProgressRing.jsx'
 import PageHeader, { HeroStat } from '../components/ui/PageHeader.jsx'
 import { useApiData } from '../utils/useApiData.js'
 import { useTheme } from '../theme/ThemeContext.jsx'
-import { categoryColor, categoryIcon } from '../utils/categoryStyle.js'
+import { categoryColors, categoryIcon } from '../utils/categoryStyle.js'
 import { CATEGORIES, currentMonth, money, monthLabel, previousMonth } from '../utils/format.js'
 
 // Monthly budget (UC-BUD-01): a spending limit per category. Spending comes from transactions
@@ -17,11 +17,15 @@ export default function BudgetPage() {
   const { theme } = useTheme()
   const [month, setMonth] = useState(currentMonth())
   const budgets = useApiData(`/budgets?month=${month}`)
+  // Reload this page's list and the month dropdown (a month may gain or lose its data)
+  const refresh = async () => { await budgets.reload(); notifyDataChanged() }
   const [editing, setEditing] = useState(null)
   const [copyMsg, setCopyMsg] = useState('')
   const [copying, setCopying] = useState(false)
 
   const list = (budgets.data ?? []).map((b) => ({ ...b, budget: Number(b.budget), spent: Number(b.spent), lastMonth: Number(b.lastMonth ?? 0) }))
+  // One unique color per category on this page
+  const colors = categoryColors(list.map((b) => b.name), theme)
   const totalBudget = list.reduce((s, b) => s + b.budget, 0)
   const totalSpent = list.reduce((s, b) => s + b.spent, 0)
   const left = totalBudget - totalSpent
@@ -48,7 +52,7 @@ export default function BudgetPage() {
       }
       setCopyMsg(toCopy.length ? `Copied ${toCopy.length} categories from ${monthLabel(previousMonth(month))}.`
         : `Nothing new to copy from ${monthLabel(previousMonth(month))}.`)
-      await budgets.reload()
+      await refresh()
     } catch {
       setCopyMsg("Couldn't copy last month's budget. Please try again.")
     } finally {
@@ -94,15 +98,15 @@ export default function BudgetPage() {
         <div className="form-panel mb-4">
           <h3 className="h6 fw-bold mb-3">{editing.id ? `Edit ${editing.name}` : 'New category'}</h3>
           <BudgetForm month={month} item={editing} onCancel={() => setEditing(null)}
-            onSaved={async () => { setEditing(null); await budgets.reload() }} />
+            onSaved={async () => { setEditing(null); await refresh() }} />
         </div>
       )}
 
       <div className="row g-3">
         {list.map((b) => (
           <div className="col-md-6 col-xl-4" key={b.id}>
-            <CategoryCard b={b} color={categoryColor(b.name, theme)} onEdit={() => setEditing(b)}
-              onDelete={async () => { await api(`/budgets/${b.id}`, { method: 'DELETE' }); await budgets.reload() }} />
+            <CategoryCard b={b} color={colors[b.name]} onEdit={() => setEditing(b)}
+              onDelete={async () => { await api(`/budgets/${b.id}`, { method: 'DELETE' }); await refresh() }} />
           </div>
         ))}
         {!editing && (
